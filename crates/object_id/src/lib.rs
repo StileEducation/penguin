@@ -1,9 +1,6 @@
-use std::{
-    sync::{
-        LazyLock,
-        atomic::{AtomicU32, Ordering},
-    },
-    time::{Duration, SystemTime, UNIX_EPOCH},
+use std::sync::{
+    LazyLock,
+    atomic::{AtomicU32, Ordering},
 };
 
 static COUNTER: LazyLock<AtomicU32> = LazyLock::new(|| AtomicU32::new(rand::random()));
@@ -31,10 +28,18 @@ pub struct ObjectId {
 
 impl ObjectId {
     pub fn new() -> Self {
-        Self::from_time(SystemTime::now(), true)
+        let mut t = libc::timespec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+        assert_eq!(
+            unsafe { libc::clock_gettime(libc::CLOCK_REALTIME, &mut t) },
+            0
+        );
+        Self::from_time(t.tv_sec, true)
     }
 
-    pub fn from_time(t: SystemTime, unique: bool) -> Self {
+    pub fn from_time(t: i64, unique: bool) -> Self {
         let counter = if unique {
             let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
             let bs = counter.to_be_bytes();
@@ -42,11 +47,9 @@ impl ObjectId {
         } else {
             [0, 0, 0]
         };
-        let timestamp = (t
-            .duration_since(UNIX_EPOCH)
-            .expect("time is after unix epoch; that is impossible")
-            .as_secs() as u32)
-            .to_be_bytes();
+
+        // TODO: Handle overflow
+        let timestamp = (t as u32).to_be_bytes();
         let machine_id = *MACHINE_ID;
 
         Self {
@@ -64,8 +67,8 @@ impl ObjectId {
         bs
     }
 
-    pub fn timestamp(&self) -> SystemTime {
-        SystemTime::UNIX_EPOCH + Duration::from_secs(u32::from_be_bytes(self.timestamp) as u64)
+    pub fn timestamp(&self) -> i64 {
+        u32::from_be_bytes(self.timestamp) as i64
     }
 
     pub fn machine_id(&self) -> u64 {

@@ -1,6 +1,6 @@
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
-use magnus::{function, method, prelude::*, Error, Ruby};
+use magnus::{function, method, prelude::*, Error, Ruby, Time};
 
 #[derive(Debug)]
 #[magnus::wrap(class = "Penguin::ObjectId")]
@@ -11,8 +11,11 @@ impl ObjectId {
         Self(object_id::ObjectId::new())
     }
 
-    fn generate_from_time(t: SystemTime, unique: bool) -> Self {
-        Self(object_id::ObjectId::from_time(t, unique))
+    fn generate_from_time(t: Time, unique: bool) -> Self {
+        Self(object_id::ObjectId::from_time(
+            t.timespec().unwrap().tv_sec,
+            unique,
+        ))
     }
 
     fn from_string(ruby: &Ruby, s: String) -> Result<Self, Error> {
@@ -37,7 +40,7 @@ impl ObjectId {
     }
 
     fn timestamp(&self) -> SystemTime {
-        self.0.timestamp()
+        SystemTime::UNIX_EPOCH + Duration::from_secs(self.0.timestamp() as u64)
     }
 
     fn machine_id(&self) -> u64 {
