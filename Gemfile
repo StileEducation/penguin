@@ -11,3 +11,8 @@ gem "rake", "~> 13.0"
 gem "rake-compiler"
 
 gem "minitest", "~> 5.16"
+
+group :development do
+  gem 'ruby-lsp', require: false
+  gem 'debug', require: false
+end
