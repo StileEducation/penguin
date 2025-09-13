@@ -18,4 +18,5 @@ group :development do
   gem 'bson', '~> 5.1.1'
   gem 'base64'
   gem 'bigdecimal'
+  gem "benchmark-ips", "~> 2.14"
 end

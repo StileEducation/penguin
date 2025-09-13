@@ -3,7 +3,9 @@
 require "bundler/gem_tasks"
 require "minitest/test_task"
 
-Minitest::TestTask.create
+Minitest::TestTask.create do |t|
+  t.test_globs = ["test/test_*.rb", "test/bench_*.rb"]
+end
 
 require "rb_sys/extensiontask"
 
