@@ -1,52 +1,34 @@
 # frozen_string_literal: true
+# 
+# Tests comparing the output of Penguin::ObjectId with BSON::ObjectId.
 
-require "test_helper"
+require 'bson'
+
+require_relative 'test_helper'
 
 class TestBsonObjectId < Minitest::Test
-  def test_from_time_unique
-    t = Time.now - 1000
-    100.times.reduce(BSON::ObjectId.from_time(t, unique: true)) do |prev, _|
-      id = BSON::ObjectId.from_time(t, unique: true)
-      assert_equal t.floor, id.timestamp
-      assert_operator prev.counter, :<, id.counter
-      assert_equal prev.machine_id, id.machine_id
-      assert_operator prev.counter, :<, id.counter
-      assert_operator prev, :<, id
-      id
-    end
-
+  def test_compare
+    bson_id = BSON::ObjectId.new
+    penguin_id = Penguin::ObjectId.from_time(bson_id.to_time)
+    assert_equal bson_id.generation_time, penguin_id.timestamp
   end
 
-  def test_from_time_not_unique
+  def test_from_time
     t = Time.now - 1000
-    100.times.reduce(BSON::ObjectId.from_time(t, unique: false)) do |prev, _|
-      id = BSON::ObjectId.from_time(t, unique: false)
-      assert_equal t.floor, id.timestamp
-      assert_equal 0, id.counter
-      assert_equal prev.machine_id, id.machine_id
-      assert_equal prev, id
-      id
-    end
-  end
-
-  def test_new
-    100.times.reduce(BSON::ObjectId.new) do |prev, _|
-      id = BSON::ObjectId.new
-      assert_operator prev.counter, :<, id.counter
-      assert_equal prev.machine_id, id.machine_id
-      id
-    end
+    # BSON::ObjectId.from_time doesn't respect the input time if `unique` is
+    # true so only test with `unique: false`.
+    bson_id = BSON::ObjectId.from_time(t, unique: false)
+    penguin_id = Penguin::ObjectId.from_time(t, unique: false)
+    assert_equal bson_id.generation_time, penguin_id.timestamp
+    assert_equal bson_id._counter_part.to_i(16), penguin_id.counter
   end
 
   def test_from_string
-    strings = [
-      '64c13ab08edf48a008793cac',
-      '4e4d66343b39b68407000001',
-    ]
-
-    strings.each do |string|
-      id = BSON::ObjectId.from_string(string)
-      assert_equal string, id.to_s
-    end
+    string = '64c13ab08edf48a008793cac'
+    bson_id = BSON::ObjectId.from_string(string)
+    penguin_id = Penguin::ObjectId.from_string(string)
+    assert_equal bson_id.generation_time, penguin_id.timestamp
+    assert_equal bson_id._counter_part.to_i(16), penguin_id.counter
+    assert_equal bson_id._process_part.to_i(16), penguin_id.machine_id
   end
 end
