@@ -18,6 +18,8 @@ static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
 pub enum Error {
     #[error("invalid hex string: {0}")]
     InvalidHexString(#[from] hex::FromHexError),
+    #[error("invalid hex ID must be 12 bytes, got {0}")]
+    InvalidHexIdLength(usize),
 }
 
 #[derive(Debug)]
@@ -91,7 +93,9 @@ impl TryFrom<String> for ObjectId {
     type Error = Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let bs = hex::decode(value)?;
-        // TODO: Validate length
+        if bs.len() != 12 {
+            return Err(Error::InvalidHexIdLength(bs.len()));
+        }
         let timestamp = [bs[0], bs[1], bs[2], bs[3]];
         let machine_id = [bs[4], bs[5], bs[6], bs[7], bs[8]];
         let counter = [bs[9], bs[10], bs[11]];
