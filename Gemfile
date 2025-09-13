@@ -19,4 +19,5 @@ group :development do
   gem 'base64'
   gem 'bigdecimal'
   gem "benchmark-ips", "~> 2.14"
+  gem "aggregate_assertions"
 end

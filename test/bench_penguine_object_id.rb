@@ -6,36 +6,6 @@ require "benchmark/ips"
 require_relative "test_helper"
 
 class BenchPenguinObjectId < Minitest::Benchmark
-  def bench_compare_generation_with_bson
-    report = Benchmark.ips do |x|
-      x.report("Penguin::ObjectId") { Penguin::ObjectId.new }
-      x.report("BSON::ObjectId") { BSON::ObjectId.new }
-      x.compare!
-    end
-
-    penguin = report.entries.find { |e| e.label == "Penguin::ObjectId" }
-    bson = report.entries.find { |e| e.label == "BSON::ObjectId" }
-    
-    unless penguin.stats.overlaps?(bson.stats) || penguin.stats.central_tendency > bson.stats.central_tendency
-      flunk "Penguin::ObjectId is slower than BSON::ObjectId"
-    end
-  end
-
-  def bench_compare_generation_with_bson
-    report = Benchmark.ips do |x|
-      x.report("Penguin::ObjectId") { Penguin::ObjectId.new.to_s }
-      x.report("BSON::ObjectId") { BSON::ObjectId.new.to_s }
-      x.compare!
-    end
-
-    penguin = report.entries.find { |e| e.label == "Penguin::ObjectId" }
-    bson = report.entries.find { |e| e.label == "BSON::ObjectId" }
-    
-    unless penguin.stats.overlaps?(bson.stats) || penguin.stats.central_tendency > bson.stats.central_tendency
-      flunk "Penguin::ObjectId string generation is slower than BSON::ObjectId"
-    end
-  end
-
   def bench_linear_performance
     # The time to generate an ID should be constant so increasing the number of
     # generated IDs should increase runtime linearly.

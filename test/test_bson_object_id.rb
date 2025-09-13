@@ -1,8 +1,10 @@
 # frozen_string_literal: true
-# 
+#
 # Tests comparing the output of Penguin::ObjectId with BSON::ObjectId.
 
 require 'bson'
+require "benchmark/ips"
+require "aggregate_assertions"
 
 require_relative 'test_helper'
 
@@ -30,5 +32,36 @@ class TestBsonObjectId < Minitest::Test
     assert_equal bson_id.generation_time, penguin_id.timestamp
     assert_equal bson_id._counter_part.to_i(16), penguin_id.counter
     assert_equal bson_id._process_part.to_i(16), penguin_id.machine_id
+  end
+
+  def test_compare_performance
+    report = Benchmark.ips do |x|
+      x.report("Penguin::ObjectId") { Penguin::ObjectId.new }
+      x.report("BSON::ObjectId") { BSON::ObjectId.new }
+      x.compare!
+    end
+
+    penguin = report.entries.find { |e| e.label == "Penguin::ObjectId" }
+    bson = report.entries.find { |e| e.label == "BSON::ObjectId" }
+
+    report = Benchmark.ips do |x|
+      x.report("Penguin::ObjectId.to_s") { Penguin::ObjectId.new.to_s }
+      x.report("BSON::ObjectId.to_s") { BSON::ObjectId.new.to_s }
+      x.compare!
+    end
+
+
+    penguin_to_s = report.entries.find { |e| e.label == "Penguin::ObjectId.to_s" }
+    bson_to_s = report.entries.find { |e| e.label == "BSON::ObjectId.to_s" }
+
+    aggregate_assertions do
+      assert penguin.stats.overlaps?(bson.stats) ||
+        penguin.stats.central_tendency > bson.stats.central_tendency,
+        "Penguin::ObjectId is slower than BSON::ObjectId"
+
+      assert penguin_to_s.stats.overlaps?(bson_to_s.stats) ||
+        penguin_to_s.stats.central_tendency > bson_to_s.stats.central_tendency,
+        "Penguin::ObjectId string generation is slower than BSON::ObjectId"
+    end
   end
 end
