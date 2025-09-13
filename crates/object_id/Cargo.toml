@@ -1,0 +1,18 @@
+[package]
+name = "object_id"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+hex = "0.4.3"
+log = "0.4.28"
+rand = "0.9.2"
+thiserror = "2.0.16"
+
+[dev-dependencies]
+pprof = { version = "0.15.0", features = ["flamegraph", "criterion"] }
+criterion = "0.5.0"
+
+[[bench]]
+name = "object_id_generation"
+harness = false
