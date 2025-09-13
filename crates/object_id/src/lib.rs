@@ -18,16 +18,12 @@ static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
 pub enum Error {
     #[error("invalid hex string: {0}")]
     InvalidHexString(#[from] hex::FromHexError),
-    #[error("invalid hex ID must be 12 bytes, got {0}")]
+    #[error("hex ID must be 12 bytes, got {0}")]
     InvalidHexIdLength(usize),
 }
 
 #[derive(Debug)]
-pub struct ObjectId {
-    timestamp: [u8; 4],
-    machine_id: [u8; 5],
-    counter: [u8; 3],
-}
+pub struct ObjectId([u8; 12]);
 
 impl ObjectId {
     pub fn new() -> Self {
@@ -49,42 +45,39 @@ impl ObjectId {
             .to_be_bytes();
         let machine_id = *MACHINE_ID;
 
-        Self {
-            timestamp,
-            machine_id,
-            counter,
-        }
+        let mut bs = [0u8; 12];
+        bs[0..4].copy_from_slice(&timestamp);
+        bs[4..9].copy_from_slice(&machine_id);
+        bs[9..12].copy_from_slice(&counter);
+        Self(bs)
     }
 
     pub fn to_bytes(&self) -> [u8; 12] {
-        let mut bs = [0u8; 12];
-        bs[0..4].copy_from_slice(&self.timestamp);
-        bs[4..9].copy_from_slice(&self.machine_id);
-        bs[9..12].copy_from_slice(&self.counter);
-        bs
+        self.0
     }
 
     pub fn timestamp(&self) -> SystemTime {
-        SystemTime::UNIX_EPOCH + Duration::from_secs(u32::from_be_bytes(self.timestamp) as u64)
+        let bytes = self.0[0..4].try_into().unwrap();
+        SystemTime::UNIX_EPOCH + Duration::from_secs(u32::from_be_bytes(bytes) as u64)
     }
 
     pub fn machine_id(&self) -> u64 {
         let mut padded = [0u8; 8];
-        padded[3..8].copy_from_slice(&self.machine_id);
+        padded[3..8].copy_from_slice(&self.0[4..9]);
         u64::from_be_bytes(padded)
     }
 
     pub fn counter(&self) -> u32 {
-        u32::from_be_bytes([0, self.counter[0], self.counter[1], self.counter[2]])
+        u32::from_be_bytes([0, self.0[9], self.0[10], self.0[11]])
     }
 }
 
 impl ToString for ObjectId {
     fn to_string(&self) -> String {
         let mut bs: [u8; 12] = [0; 12];
-        bs[0..4].copy_from_slice(&self.timestamp);
-        bs[4..9].copy_from_slice(&self.machine_id);
-        bs[9..12].copy_from_slice(&self.counter);
+        bs[0..4].copy_from_slice(&self.0[0..4]);
+        bs[4..9].copy_from_slice(&self.0[4..9]);
+        bs[9..12].copy_from_slice(&self.0[9..12]);
         hex::encode(bs)
     }
 }
@@ -96,14 +89,8 @@ impl TryFrom<String> for ObjectId {
         if bs.len() != 12 {
             return Err(Error::InvalidHexIdLength(bs.len()));
         }
-        let timestamp = [bs[0], bs[1], bs[2], bs[3]];
-        let machine_id = [bs[4], bs[5], bs[6], bs[7], bs[8]];
-        let counter = [bs[9], bs[10], bs[11]];
-        Ok(Self {
-            timestamp,
-            machine_id,
-            counter,
-        })
+        let inner = bs.try_into().unwrap();
+        Ok(Self(inner))
     }
 }
 
