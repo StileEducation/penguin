@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in bson_object_id.gemspec
+# Specify your gem's dependencies in penguin.gemspec
 gemspec
 
 gem "irb"
@@ -15,4 +15,7 @@ gem "minitest", "~> 5.16"
 group :development do
   gem 'ruby-lsp', require: false
   gem 'debug', require: false
+  gem 'bson', '~> 5.1.1'
+  gem 'base64'
+  gem 'bigdecimal'
 end

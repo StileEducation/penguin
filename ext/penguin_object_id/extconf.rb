@@ -3,4 +3,4 @@
 require "mkmf"
 require "rb_sys/mkmf"
 
-create_rust_makefile("bson_object_id/bson_object_id")
+create_rust_makefile("penguin_object_id/penguin_object_id")

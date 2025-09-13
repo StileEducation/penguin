@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/bson_object_id/version"
+require_relative "lib/penguin/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "bson_object_id"
-  spec.version = BsonObjectId::VERSION
+  spec.name = "penguin"
+  spec.version = Penguin::VERSION
   spec.authors = ["Nick Spain"]
   spec.email = ["nicholas.spain@stileeducation.com"]
   spec.summary = "Generate and parse BSON Object IDs"
@@ -25,15 +25,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-  spec.extensions = ["ext/bson_object_id/extconf.rb"]
+  spec.extensions = ["ext/penguin_object_id/extconf.rb"]
 
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
   spec.add_dependency "rb_sys", "~> 0.9.91"
-
-  spec.add_development_dependency "bson", "~> 5.1.1"
-
-
-  # For more information and examples about making a new gem, check out our
-  # guide at: https://bundler.io/guides/creating_gem.html
 end

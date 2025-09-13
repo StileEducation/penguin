@@ -9,10 +9,10 @@ require "rb_sys/extensiontask"
 
 task build: :compile
 
-GEMSPEC = Gem::Specification.load("bson_object_id.gemspec")
+GEMSPEC = Gem::Specification.load("penguin.gemspec")
 
-RbSys::ExtensionTask.new("bson_object_id", GEMSPEC) do |ext|
-  ext.lib_dir = "lib/bson_object_id"
+RbSys::ExtensionTask.new("penguin_object_id", GEMSPEC) do |ext|
+  ext.lib_dir = "lib"
 end
 
 task default: %i[compile test]

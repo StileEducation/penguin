@@ -6,7 +6,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use magnus::{function, method, prelude::*, Error, RHash, Ruby, Symbol};
+use magnus::{function, method, prelude::*, Error, Ruby};
 
 static COUNTER: LazyLock<AtomicU32> = LazyLock::new(|| AtomicU32::new(rand::random()));
 
@@ -17,7 +17,7 @@ static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
 });
 
 #[derive(Debug)]
-#[magnus::wrap(class = "BSON::ObjectId")]
+#[magnus::wrap(class = "Penguin::ObjectId")]
 struct ObjectId {
     timestamp: [u8; 4],
     machine_id: [u8; 5],
@@ -25,37 +25,16 @@ struct ObjectId {
 }
 
 impl ObjectId {
-    fn new(ruby: &Ruby) -> Result<Self, Error> {
-        let kwargs = ruby.hash_new_capa(1);
-        kwargs
-            .aset(ruby.to_symbol("unique"), true)
-            .expect("failed to insert into hash we just created");
-        Self::from_time(ruby, SystemTime::now(), kwargs)
+    fn generate() -> Result<Self, Error> {
+        Self::generate_from_time(SystemTime::now(), true)
     }
 
-    fn from_time(ruby: &Ruby, t: SystemTime, kwargs: RHash) -> Result<Self, Error> {
-        log::debug!("Generating ID from time: t={t:?}, kwargs={kwargs:?}");
-        let unique = {
-            let v = kwargs.get(ruby.to_symbol("unique"));
-            if let Some(v) = v {
-                log::debug!(
-                    "Found unique in kwargs, converting to bool: {v:?}, as bool: {}",
-                    v.to_bool()
-                );
-                v.to_bool()
-            } else {
-                log::debug!("No unique in kwargs, defaulting to false");
-                false
-            }
-        };
-
+    fn generate_from_time(t: SystemTime, unique: bool) -> Result<Self, Error> {
         let counter = if unique {
             let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
-            log::debug!("Generating unique ID via counter: counter={counter}");
             let bs = counter.to_be_bytes();
             [bs[1], bs[2], bs[3]]
         } else {
-            log::debug!("Generating non-unique ID");
             [0, 0, 0]
         };
         let timestamp = (t
@@ -65,12 +44,6 @@ impl ObjectId {
             .to_be_bytes();
         let machine_id = *MACHINE_ID;
 
-        log::debug!(
-            "Generated ID: timestamp={:?}, machine_id={:?}, counter={:?}",
-            timestamp,
-            machine_id,
-            counter
-        );
         Ok(Self {
             timestamp,
             machine_id,
@@ -164,10 +137,13 @@ impl Ord for ObjectId {
 fn init(ruby: &Ruby) -> Result<(), Error> {
     env_logger::init();
 
-    let bson_module = ruby.define_module("BSON")?;
-    let object_id_class = bson_module.define_class("ObjectId", ruby.class_object())?;
-    object_id_class.define_singleton_method("new", function!(ObjectId::new, 0))?;
-    object_id_class.define_singleton_method("from_time", function!(ObjectId::from_time, 2))?;
+    let penguin_module = ruby.define_module("Penguin")?;
+    let object_id_class = penguin_module.define_class("ObjectId", ruby.class_object())?;
+    object_id_class.define_singleton_method("generate", function!(ObjectId::generate, 0))?;
+    object_id_class.define_singleton_method(
+        "generate_from_time",
+        function!(ObjectId::generate_from_time, 2),
+    )?;
     object_id_class.define_singleton_method("from_string", function!(ObjectId::from_string, 1))?;
 
     object_id_class.define_method("to_s", method!(ObjectId::to_s, 0))?;

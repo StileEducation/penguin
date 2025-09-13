@@ -1,12 +1,14 @@
 PATH
   remote: .
   specs:
-    bson_object_id (0.1.0)
+    penguin (0.1.0)
       rb_sys (~> 0.9.91)
 
 GEM
   remote: https://rubygems.org/
   specs:
+    base64 (0.3.0)
+    bigdecimal (3.2.3)
     bson (5.1.1)
     date (3.4.1)
     debug (1.11.0)
@@ -52,11 +54,13 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  base64
+  bigdecimal
   bson (~> 5.1.1)
-  bson_object_id!
   debug
   irb
   minitest (~> 5.16)
+  penguin!
   rake (~> 13.0)
   rake-compiler
   ruby-lsp

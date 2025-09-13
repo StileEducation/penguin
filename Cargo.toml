@@ -3,5 +3,5 @@
 # in the ext/ directory.
 
 [workspace]
-members = ["./ext/bson_object_id"]
+members = ["./ext/penguin_object_id"]
 resolver = "2"

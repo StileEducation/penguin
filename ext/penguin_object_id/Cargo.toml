@@ -1,5 +1,5 @@
 [package]
-name = "bson_object_id"
+name = "penguin_object_id"
 version = "0.1.0"
 edition = "2021"
 authors = ["Nick Spain <nicholas.spain@stileeducation.com>"]
