@@ -5,3 +5,8 @@
 [workspace]
 members = ["./ext/penguin_object_id","crates/object_id"]
 resolver = "2"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
