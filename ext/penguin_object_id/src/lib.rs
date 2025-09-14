@@ -26,7 +26,7 @@ impl ObjectId {
 
     fn to_s(ruby: &Ruby, obj: &Self) -> RString {
         let mut bs = [0u8; 24];
-        hex::encode_to_slice(&obj.0.to_bytes(), &mut bs)
+        hex::encode_to_slice(obj.0.to_bytes(), &mut bs)
             .expect("encoding should always succeed for 12-byte input");
         ruby.str_from_slice(&bs)
     }

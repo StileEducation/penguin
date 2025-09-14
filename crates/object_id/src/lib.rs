@@ -82,16 +82,6 @@ impl ObjectId {
     }
 }
 
-impl ToString for ObjectId {
-    fn to_string(&self) -> String {
-        let mut bs: [u8; 12] = [0; 12];
-        bs[0..4].copy_from_slice(&self.timestamp);
-        bs[4..9].copy_from_slice(&self.machine_id);
-        bs[9..12].copy_from_slice(&self.counter);
-        hex::encode(bs)
-    }
-}
-
 impl TryFrom<String> for ObjectId {
     type Error = Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -136,5 +126,11 @@ impl PartialOrd for ObjectId {
 impl Ord for ObjectId {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.to_bytes().cmp(&other.to_bytes())
+    }
+}
+
+impl Default for ObjectId {
+    fn default() -> Self {
+        Self::new()
     }
 }
