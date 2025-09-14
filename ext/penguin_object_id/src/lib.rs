@@ -1,6 +1,6 @@
 use std::time::{Duration, SystemTime};
 
-use magnus::{function, method, prelude::*, Error, Ruby, Time};
+use magnus::{function, method, prelude::*, Error, RString, Ruby, Time};
 
 #[derive(Debug)]
 #[magnus::wrap(class = "Penguin::ObjectId", size, free_immediately)]
@@ -24,8 +24,11 @@ impl ObjectId {
         })?))
     }
 
-    fn to_s(&self) -> String {
-        self.0.to_string()
+    fn to_s(ruby: &Ruby, obj: &Self) -> RString {
+        let mut bs = [0u8; 24];
+        hex::encode_to_slice(&obj.0.to_bytes(), &mut bs)
+            .expect("encoding should always succeed for 12-byte input");
+        ruby.str_from_slice(&bs)
     }
 
     fn to_bytes(&self) -> [u8; 12] {
