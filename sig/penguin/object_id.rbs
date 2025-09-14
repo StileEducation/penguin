@@ -1,0 +1,12 @@
+module Penguin
+  class ObjectId
+    def self.from_time: (Time time, ?unique: bool) -> ObjectId
+    def self.new: () -> ObjectId
+    def self.from_string: (String string) -> ObjectId
+    def to_s: () -> String
+    def to_time: () -> Time
+    def timestamp: () -> Time
+    def machine_id: () -> Integer
+    def counter: () -> Integer
+  end
+end
