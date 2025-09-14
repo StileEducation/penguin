@@ -6,6 +6,8 @@ The `bson` gem is great, if you're using BSON. However, it's a big dependency
 just for generating object IDs generation. Penguin provides _just_ object ID
 generation.
 
+BSON Object ID spec: https://specifications.readthedocs.io/en/latest/bson-objectid/objectid/
+
 ## Usage
 
 Penguin provides the same interface as `BSON::ObjectId` so you should be able to
