@@ -81,6 +81,7 @@ fn init(ruby: &Ruby) -> Result<(), Error> {
 
     object_id_class.define_method("to_s", method!(ObjectId::to_s, 0))?;
     object_id_class.define_method("to_string", method!(ObjectId::to_s, 0))?;
+    object_id_class.define_method("to_str", method!(ObjectId::to_s, 0))?;
 
     object_id_class.define_method("to_time", method!(ObjectId::timestamp, 0))?;
     object_id_class.define_method("timestamp", method!(ObjectId::timestamp, 0))?;
