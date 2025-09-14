@@ -50,9 +50,20 @@ class TestBsonObjectId < Minitest::Test
       x.compare!
     end
 
-
     penguin_to_s = report.entries.find { |e| e.label == "Penguin::ObjectId.to_s" }
     bson_to_s = report.entries.find { |e| e.label == "BSON::ObjectId.to_s" }
+
+    report = Benchmark.ips do |x|
+      # Construct the ID using BSON::ObjectId for both so that the blocks, as
+      # much as possible, are only testing the different in performance of the
+      # `from_string` methods.
+      x.report("Penguin::ObjectId.from_string") { Penguin::ObjectId.from_string(BSON::ObjectId.new.to_s) }
+      x.report("BSON::ObjectId.from_string") { BSON::ObjectId.from_string(BSON::ObjectId.new.to_s) }
+      x.compare!
+    end
+
+    penguin_from_string = report.entries.find { |e| e.label == "Penguin::ObjectId.from_string" }
+    bson_from_string = report.entries.find { |e| e.label == "BSON::ObjectId.from_string" }
 
     aggregate_assertions do
       assert penguin.stats.overlaps?(bson.stats) ||
@@ -62,6 +73,10 @@ class TestBsonObjectId < Minitest::Test
       assert penguin_to_s.stats.overlaps?(bson_to_s.stats) ||
         penguin_to_s.stats.central_tendency > bson_to_s.stats.central_tendency,
         "Penguin::ObjectId string generation is slower than BSON::ObjectId"
+
+      assert penguin_from_string.stats.overlaps?(bson_from_string.stats) ||
+        penguin_from_string.stats.central_tendency > bson_from_string.stats.central_tendency,
+        "Penguin::ObjectId string parsing is slower than BSON::ObjectId"
     end
   end
 end
