@@ -9,15 +9,15 @@ fn bench_generation(c: &mut Criterion) {
     });
 }
 
-fn bench_string_generation(c: &mut Criterion) {
-    c.bench_function("string_generation", |b| {
-        b.iter(|| black_box(object_id::ObjectId::new().to_string()))
+fn bench_bytes_generation(c: &mut Criterion) {
+    c.bench_function("bytes_generation", |b| {
+        b.iter(|| black_box(object_id::ObjectId::new().to_bytes()))
     });
 }
 
 criterion_group!(
     name = benches;
     config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
-    targets = bench_generation, bench_string_generation
+    targets = bench_generation, bench_bytes_generation
 );
 criterion_main!(benches);
