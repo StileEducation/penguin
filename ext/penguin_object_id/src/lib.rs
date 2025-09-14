@@ -39,17 +39,7 @@ impl ObjectId {
         ruby.str_from_slice(&bs)
     }
 
-    fn to_bytes(&self) -> [u8; 12] {
-        self.0.to_bytes()
-    }
-
-    fn to_i(&self) -> u128 {
-        let bs = self.to_bytes();
-        let mut padded_bs = [0u8; 16];
-        padded_bs[0..12].copy_from_slice(&bs);
-        u128::from_be_bytes(padded_bs)
-    }
-
+    /// Get the timestamp component of an object ID.
     fn timestamp(&self) -> SystemTime {
         SystemTime::UNIX_EPOCH + Duration::from_secs(self.0.timestamp() as u64)
     }
@@ -91,7 +81,6 @@ fn init(ruby: &Ruby) -> Result<(), Error> {
 
     object_id_class.define_method("to_s", method!(ObjectId::to_s, 0))?;
     object_id_class.define_method("to_string", method!(ObjectId::to_s, 0))?;
-    object_id_class.define_method("to_i", method!(ObjectId::to_i, 0))?;
 
     object_id_class.define_method("to_time", method!(ObjectId::timestamp, 0))?;
     object_id_class.define_method("timestamp", method!(ObjectId::timestamp, 0))?;

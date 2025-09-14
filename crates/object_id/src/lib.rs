@@ -109,15 +109,6 @@ impl TryFrom<String> for ObjectId {
     }
 }
 
-impl From<ObjectId> for u128 {
-    fn from(value: ObjectId) -> Self {
-        let bs = value.to_bytes();
-        let mut padded_bs = [0u8; 16];
-        padded_bs[0..12].copy_from_slice(&bs);
-        u128::from_be_bytes(padded_bs)
-    }
-}
-
 impl PartialEq for ObjectId {
     fn eq(&self, other: &Self) -> bool {
         self.to_bytes() == other.to_bytes()
