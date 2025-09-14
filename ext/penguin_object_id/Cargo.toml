@@ -14,3 +14,15 @@ env_logger = "0.11.8"
 magnus = { version = "0.8.1" }
 object_id = { path = "../../crates/object_id" }
 
+[build-dependencies]
+rb-sys-env = "0.2.2"
+
+[dev-dependencies]
+rb-sys = "0.9.117"
+rb-sys-test-helpers = "0.2.2"
+pprof = { version = "0.15.0", features = ["flamegraph", "criterion"] }
+criterion = "0.5.0"
+
+[[bench]]
+name = "object_id_generation"
+harness = false

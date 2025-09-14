@@ -13,6 +13,7 @@ task build: :compile
 
 GEMSPEC = Gem::Specification.load("penguin.gemspec")
 
+ENV['RUBY_VERSION'] = '3.4.5'
 RbSys::ExtensionTask.new("penguin_object_id", GEMSPEC) do |ext|
   ext.lib_dir = "lib"
 end

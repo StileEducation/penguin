@@ -18,6 +18,10 @@
   "rubyLsp.testTimeout": 30,
   "rubyLsp.bundleGemfile": "Gemfile",
   "terminal.integrated.env.osx": {
-    "RUST_LOG": "debug"
+    "RUST_LOG": "debug",
+    "RUBY_VERSION": "3.4.5"
+  },
+  "rust-analyzer.cargo.extraEnv": {
+    "RUBY_VERSION": "3.4.5"
   }
 }
