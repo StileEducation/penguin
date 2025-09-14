@@ -3,8 +3,12 @@ use std::sync::{
     atomic::{AtomicU32, Ordering},
 };
 
+/// Global counter for differentiating IDs within the same second. Per the spec,
+/// it is initialised to a random value, then incremented from there.
 static COUNTER: LazyLock<AtomicU32> = LazyLock::new(|| AtomicU32::new(rand::random()));
 
+/// A unique machine ID (really a process ID). This is generated once per
+/// process and use in all IDs.
 static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
     let mut machine_id = [0; 5];
     rand::fill(&mut machine_id);
@@ -27,18 +31,22 @@ pub struct ObjectId {
 }
 
 impl ObjectId {
+    /// Generate a new, unique, object ID for the current time.
     pub fn new() -> Self {
         let mut t = libc::timespec {
             tv_sec: 0,
             tv_nsec: 0,
         };
         assert_eq!(
+            // This is significantly more performant that using the safe
+            // `std::time::SystemTime::now` (26% based on benchmarking).
             unsafe { libc::clock_gettime(libc::CLOCK_REALTIME, &mut t) },
             0
         );
         Self::from_time(t.tv_sec, true)
     }
 
+    /// Generate an, optionally unique, object ID for the given time.
     pub fn from_time(t: i64, unique: bool) -> Self {
         let counter = if unique {
             let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
@@ -59,6 +67,7 @@ impl ObjectId {
         }
     }
 
+    /// Convert an object ID to its raw bytes.
     pub fn to_bytes(&self) -> [u8; 12] {
         let mut bs = [0u8; 12];
         bs[0..4].copy_from_slice(&self.timestamp);
