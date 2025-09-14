@@ -3,7 +3,7 @@ use std::time::{Duration, SystemTime};
 use magnus::{function, method, prelude::*, Error, Ruby, Time};
 
 #[derive(Debug)]
-#[magnus::wrap(class = "Penguin::ObjectId")]
+#[magnus::wrap(class = "Penguin::ObjectId", size, free_immediately)]
 struct ObjectId(object_id::ObjectId);
 
 impl ObjectId {
