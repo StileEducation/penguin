@@ -26,7 +26,7 @@ pub enum Error {
     InvalidHexIdLength(usize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ObjectId {
     timestamp: [u8; 4],
     machine_id: [u8; 5],
@@ -116,14 +116,6 @@ impl TryFrom<String> for ObjectId {
         })
     }
 }
-
-impl PartialEq for ObjectId {
-    fn eq(&self, other: &Self) -> bool {
-        self.to_bytes() == other.to_bytes()
-    }
-}
-
-impl Eq for ObjectId {}
 
 impl PartialOrd for ObjectId {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
