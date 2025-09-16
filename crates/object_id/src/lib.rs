@@ -1,6 +1,6 @@
 use std::sync::{
-    atomic::{AtomicU32, Ordering},
     LazyLock,
+    atomic::{AtomicU32, Ordering},
 };
 
 /// Global counter for differentiating IDs within the same second. Per the spec,
@@ -125,7 +125,10 @@ impl PartialOrd for ObjectId {
 
 impl Ord for ObjectId {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.to_bytes().cmp(&other.to_bytes())
+        self.timestamp
+            .cmp(&other.timestamp)
+            .then_with(|| self.machine_id.cmp(&other.machine_id))
+            .then_with(|| self.counter.cmp(&other.counter))
     }
 }
 
@@ -142,7 +145,7 @@ mod tests {
         time::{SystemTime, UNIX_EPOCH},
     };
 
-    use crate::{ObjectId, COUNTER, COUNTER_MAX};
+    use crate::{COUNTER, COUNTER_MAX, ObjectId};
 
     #[test]
     fn from_time_truncates_timestamp() {
