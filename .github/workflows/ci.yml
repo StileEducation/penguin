@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
+        with:
+          ruby-version: 3.4.5
+          rustup-toolchain: stable
+          bundler-cache: true
+          cargo-cache: true
+      - name: Install dependencies
+        run: bundle install
+      - name: Lint Rust code
+        run: cargo clippy -- -D warnings
+      - name: Test Rust code
+        run: cargo test
+      - name: Build and test Ruby gem
+        run: bundle exec rake build test
