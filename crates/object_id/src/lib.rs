@@ -15,6 +15,9 @@ static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
     machine_id
 });
 
+/// Maximum value of the counter. It can be 24 bits before we wrap it back to 0.
+const COUNTER_MAX: u32 = (2 << 23) - 1;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("invalid hex string: {0}")]
@@ -51,7 +54,7 @@ impl ObjectId {
         let counter = if unique {
             // We don't care that there is an ordering between threads, just
             // that each ID gets a unique value.
-            let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
+            let counter = COUNTER.fetch_add(1, Ordering::Relaxed) & COUNTER_MAX;
             let bs = counter.to_be_bytes();
             [bs[1], bs[2], bs[3]]
         } else {
@@ -142,9 +145,12 @@ impl Default for ObjectId {
 
 #[cfg(test)]
 mod tests {
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use std::{
+        sync::atomic::Ordering,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
-    use crate::ObjectId;
+    use crate::{ObjectId, COUNTER, COUNTER_MAX};
 
     #[test]
     fn from_time_truncates_timestamp() {
