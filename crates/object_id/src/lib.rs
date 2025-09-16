@@ -49,7 +49,9 @@ impl ObjectId {
     /// Generate an, optionally unique, object ID for the given time.
     pub fn from_time(t: i64, unique: bool) -> Self {
         let counter = if unique {
-            let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
+            // We don't care that there is an ordering between threads, just
+            // that each ID gets a unique value.
+            let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
             let bs = counter.to_be_bytes();
             [bs[1], bs[2], bs[3]]
         } else {
