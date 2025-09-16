@@ -8,7 +8,7 @@ use std::sync::{
 static COUNTER: LazyLock<AtomicU32> = LazyLock::new(|| AtomicU32::new(rand::random()));
 
 /// A unique machine ID (really a process ID). This is generated once per
-/// process and use in all IDs.
+/// process and used in all IDs.
 static MACHINE_ID: LazyLock<[u8; 5]> = LazyLock::new(|| {
     let mut machine_id = [0; 5];
     rand::fill(&mut machine_id);

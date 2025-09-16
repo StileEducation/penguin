@@ -67,8 +67,6 @@ impl ObjectId {
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> Result<(), Error> {
-    env_logger::init();
-
     let penguin_module = ruby.define_module("Penguin")?;
     let object_id_class = penguin_module.define_class("ObjectId", ruby.class_object())?;
     object_id_class.define_singleton_method("generate", function!(ObjectId::generate, 0))?;
