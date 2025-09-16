@@ -188,4 +188,44 @@ mod tests {
         assert_eq!(third.counter(), 1, "third ID should have counter 1");
         assert_eq!(fourth.counter(), 2, "fourth ID should have counter 2");
     }
+
+    #[test]
+    fn test_timestamp_values() {
+        // 0x00000000: Jan 1st, 1970 00:00:00 UTC
+        let id = ObjectId::from_time(0, false);
+        assert_eq!(id.timestamp(), 0);
+
+        // 0x7FFFFFFF: Jan 19th, 2038 03:14:07 UTC
+        let id = ObjectId::from_time(0x7FFFFFFF, false);
+        assert_eq!(id.timestamp(), 0x7FFFFFFF);
+
+        // 0x80000000: Jan 19th, 2038 03:14:08 UTC
+        let id = ObjectId::from_time(0x80000000u32 as i64, false);
+        assert_eq!(id.timestamp(), 0x80000000u32 as i64);
+
+        // 0xFFFFFFFF: Feb 7th, 2106 06:28:15 UTC
+        let id = ObjectId::from_time(0xFFFFFFFFu32 as i64, false);
+        assert_eq!(id.timestamp(), 0xFFFFFFFFu32 as i64);
+    }
+
+    #[test]
+    fn test_hex_string_parsing() {
+        let hex = "507f1f77bcf86cd799439011";
+        let id = ObjectId::try_from(hex.to_string()).unwrap();
+        assert_eq!(hex::encode(id.to_bytes()), hex);
+    }
+
+    #[test]
+    fn test_ordering_by_timestamp_then_counter() {
+        let id1 = ObjectId::from_time(100, true); // earlier timestamp
+        let id2 = ObjectId::from_time(200, true); // later timestamp
+        assert!(id1 < id2);
+    }
+
+    #[test]
+    fn test_big_endian_format() {
+        let id = ObjectId::from_time(0x12345678, false);
+        let bytes = id.to_bytes();
+        assert_eq!(&bytes[0..4], &[0x12, 0x34, 0x56, 0x78]); // timestamp big endian
+    }
 }
