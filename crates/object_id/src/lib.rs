@@ -1,6 +1,6 @@
 use std::sync::{
-    LazyLock,
     atomic::{AtomicU32, Ordering},
+    LazyLock,
 };
 
 /// Global counter for differentiating IDs within the same second. Per the spec,
@@ -56,7 +56,10 @@ impl ObjectId {
             [0, 0, 0]
         };
 
-        // TODO: Handle overflow
+        // Ensure the timestamp is 4 bytes. For timestamps far in the future
+        // this will truncate them but it's how the spec is defined. Note: if
+        // `t` is bigger than u32::MAX, the value will be truncated. This is
+        // expected.
         let timestamp = (t as u32).to_be_bytes();
         let machine_id = *MACHINE_ID;
 
@@ -132,5 +135,54 @@ impl Ord for ObjectId {
 impl Default for ObjectId {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use crate::ObjectId;
+
+    #[test]
+    fn from_time_truncates_timestamp() {
+        let t = i64::MAX;
+        let id = ObjectId::from_time(t, false);
+        assert_eq!(id.timestamp(), u32::MAX as i64);
+    }
+
+    #[test]
+    fn eq_and_ord_agree() {
+        let t = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+        let id1 = ObjectId::from_time(t, false);
+        let id2 = ObjectId::from_time(t, false);
+        assert_eq!(id1, id2);
+        assert_eq!(id1.cmp(&id2), std::cmp::Ordering::Equal);
+
+        let id = ObjectId::new();
+        assert_eq!(id, id);
+        assert_eq!(id.cmp(&id), std::cmp::Ordering::Equal);
+    }
+
+    #[test]
+    fn test_counter_overflow() {
+        COUNTER.store(COUNTER_MAX, Ordering::Relaxed);
+
+        let first = ObjectId::from_time(0, true);
+        let second = ObjectId::from_time(0, true);
+        let third = ObjectId::from_time(0, true);
+        let fourth = ObjectId::from_time(0, true);
+
+        assert_eq!(
+            first.counter(),
+            COUNTER_MAX,
+            "first ID should have counter {COUNTER_MAX}"
+        );
+        assert_eq!(second.counter(), 0, "second ID should have counter 0");
+        assert_eq!(third.counter(), 1, "third ID should have counter 1");
+        assert_eq!(fourth.counter(), 2, "fourth ID should have counter 2");
     }
 }
