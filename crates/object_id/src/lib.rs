@@ -170,6 +170,12 @@ mod tests {
         assert_eq!(id.cmp(&id), std::cmp::Ordering::Equal);
     }
 
+    // Note: This test is the reason for the usage of nextest. It requires full
+    // control over the global counter state so running tests in parallel in the
+    // same process is not possible. We could use something like serial_test but
+    // that's quite brittle in that it requires all tests to be properly
+    // annotated. Instead, using nextest creates a binary for each test, so
+    // they're run in their own process and can't effect one another.
     #[test]
     fn test_counter_overflow() {
         COUNTER.store(COUNTER_MAX, Ordering::Relaxed);

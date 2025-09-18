@@ -17,7 +17,7 @@
 
 - `bundle exec rake test`: compile the extension (if needed) and execute the
   full Minitest suite, including benchmarks.
-- `cargo test -p object_id`: run Rust unit tests in isolation
+- `cargo nextest run -p object_id`: run Rust unit tests in isolation
 - `cargo bench -p object_id`: execute Criterion benchmarks for the Rust core
   implementation.
 

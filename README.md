@@ -28,7 +28,7 @@ To install this gem onto your local machine:
 1. Run `bundle install`
 2. Compile and test using `bundle exec rake build test`
 
-You can run and test the Rust code by itself using cargo.
+You can run and test the Rust code by itself using cargo and cargo-nextest.
 
 ### Benchmarking
 
