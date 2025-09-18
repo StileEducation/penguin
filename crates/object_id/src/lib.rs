@@ -141,6 +141,7 @@ impl Default for ObjectId {
 #[cfg(test)]
 mod tests {
     use std::{
+        hint::black_box,
         sync::atomic::Ordering,
         time::{SystemTime, UNIX_EPOCH},
     };
@@ -242,5 +243,26 @@ mod tests {
         let id = ObjectId::from_time(0x12345678, false);
         let bytes = id.to_bytes();
         assert_eq!(&bytes[0..4], &[0x12, 0x34, 0x56, 0x78]); // timestamp big endian
+    }
+
+    #[test]
+    fn test_negative_timestamp() {
+        // Just make sure we don't panic on this. The timestamp is a u32, by the
+        // spec, so we unavoidably lose data.
+        black_box(ObjectId::from_time(-1000, false));
+    }
+
+    #[test]
+    fn test_bigger_than_u32_timestamp() {
+        let ids = [
+            // Wraps around, then back up to the max as i64 is twice as big as
+            // u32.
+            (ObjectId::from_time(i64::MAX, true), u32::MAX as i64),
+            // Wraps back to zero
+            (ObjectId::from_time((u32::MAX as i64) + 1, true), 0),
+        ];
+        for (id, expected_timestamp) in ids {
+            assert_eq!(id.timestamp(), expected_timestamp);
+        }
     }
 }
