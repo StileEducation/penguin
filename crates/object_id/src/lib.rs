@@ -196,6 +196,15 @@ mod tests {
     }
 
     #[test]
+    fn test_counter_handles_u32_overflow() {
+        COUNTER.store(u32::MAX, Ordering::Relaxed);
+        let first = ObjectId::from_time(0, true);
+        let second = ObjectId::from_time(0, true);
+        assert_eq!(first.counter(), COUNTER_MAX);
+        assert_eq!(second.counter(), 0);
+    }
+
+    #[test]
     fn test_timestamp_values() {
         // 0x00000000: Jan 1st, 1970 00:00:00 UTC
         let id = ObjectId::from_time(0, false);
