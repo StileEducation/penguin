@@ -14,6 +14,9 @@ thiserror = "2.0.16"
 pprof = { version = "0.15.0", features = ["flamegraph", "criterion"] }
 criterion = "0.5.0"
 
+[lib]
+bench = false
+
 [[bench]]
 name = "object_id_generation"
 harness = false

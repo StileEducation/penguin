@@ -7,9 +7,13 @@ Minitest::TestTask.create do |t|
   t.test_globs = ["test/test_*.rb", "test/bench_*.rb"]
 end
 
+
 require "rb_sys/extensiontask"
 
 task build: :compile
+
+# Ensure the extension has been compiled before running tests.
+task test: :compile
 
 GEMSPEC = Gem::Specification.load("penguin.gemspec")
 
