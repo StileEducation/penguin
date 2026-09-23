@@ -37,7 +37,10 @@ class TestBsonObjectId < Minitest::Test
   def test_compare_performance
     report = Benchmark.ips do |x|
       x.report("Penguin::ObjectId") { Penguin::ObjectId.new }
-      x.report("BSON::ObjectId") { BSON::ObjectId.new }
+      # BSON::ObjectId.new defers generating the ID until something needs it,
+      # so on its own it only measures allocating an empty Ruby object.
+      # `marshal_dump` is the cheapest public method that forces generation.
+      x.report("BSON::ObjectId") { BSON::ObjectId.new.marshal_dump }
       x.compare!
     end
 
