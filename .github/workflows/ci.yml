@@ -6,11 +6,15 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: ["3.4", "4.0.7"]
     steps:
       - uses: actions/checkout@v4
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
-          ruby-version: 3.4.5
+          ruby-version: ${{ matrix.ruby-version }}
           rustup-toolchain: stable
           bundler-cache: true
           cargo-cache: true
